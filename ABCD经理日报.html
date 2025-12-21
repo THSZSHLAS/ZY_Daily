@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>酒店每日运营数字化中枢 (SOP_D 增强版)</title>
+
+    <link href="https://cdn.staticfile.net/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.prod.min.js"></script>
+    <script src="https://cdn.staticfile.net/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { background-color: #f3f4f6; font-family: "Microsoft YaHei", 'Segoe UI', sans-serif; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .phase-card { border-left: 4px solid transparent; transition: all 0.3s ease; }
+        .phase-card:hover { border-left-width: 8px; }
+        .btn-check { transition: all 0.2s; }
+        .btn-check:active { transform: scale(0.95); }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🏨</span>
+                    <h1 class="font-bold text-xl text-gray-800 tracking-wide">运营数字化中枢</h1>
+                </div>
+                <div v-if="currentRole" class="text-sm text-gray-500 font-mono">
+                    {{ currentDate }}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow py-8 px-4 sm:px-6 lg:px-8">
+
+        <div v-if="!currentRole" class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-extrabold text-gray-900">请选择今日执勤身份</h2>
+                <p class="mt-3 text-gray-500">Select Your Role to Start Daily Audit</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                <div @click="selectRole('A')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-100 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">Dept. A</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">前厅部 & 客房部</h3>
+                    <p class="text-sm text-gray-500 mt-2">Front Office & Housekeeping Manager</p>
+                </div>
+
+                <div @click="selectRole('B')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-orange-100 rounded-xl text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">Dept. B</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">餐饮部经理</h3>
+                    <p class="text-sm text-gray-500 mt-2">Food & Beverage Manager</p>
+                </div>
+
+                <div @click="selectRole('C')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-purple-100 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">Duty Mgr. C</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">值班经理</h3>
+                    <p class="text-sm text-gray-500 mt-2">Duty Manager (Check & Balance)</p>
+                </div>
+
+                <div @click="selectRole('D')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-100 rounded-xl text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">GM. D</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">总经理</h3>
+                    <p class="text-sm text-gray-500 mt-2">General Manager (Strategy)</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="max-w-5xl mx-auto">
+
+            <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 sticky top-20 z-40 border-l-4" :class="currentConfig.borderColor">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                            {{ currentConfig.title }}
+                            <span class="px-2 py-1 bg-gray-100 text-xs text-gray-500 rounded-md font-normal">SOP Checklist</span>
+                        </h2>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3 w-64">
+                            <div class="bg-gray-600 h-2.5 rounded-full transition-all duration-500" :style="{ width: completionRate + '%' }" :class="currentConfig.barColor"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">今日完成度: {{ completionRate }}%</p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button @click="currentRole = null" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                            返回
+                        </button>
+                        <button @click="exportToExcel" class="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg shadow transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            导出 Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-8 pb-12">
+                <div v-for="(phaseTasks, phaseName) in currentTasks" :key="phaseName"
+                     class="bg-white rounded-xl shadow-sm overflow-hidden phase-card hover:shadow-md"
+                     :class="currentConfig.hoverBorder">
+
+                    <div class="px-6 py-4 bg-gray-50 border-b flex items-center gap-2">
+                        <div class="w-2 h-6 rounded-full" :class="currentConfig.accentColor"></div>
+                        <h3 class="text-lg font-bold text-gray-700">{{ phaseName }}</h3>
+                    </div>
+
+                    <div class="divide-y divide-gray-100">
+                        <div v-for="(task, index) in phaseTasks" :key="index" class="p-4 sm:p-6 transition hover:bg-gray-50 flex flex-col sm:flex-row gap-4">
+
+                            <div class="flex-1">
+                                <div class="flex items-start gap-3">
+                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-mono mt-0.5">
+                                        {{ index + 1 }}
+                                    </span>
+                                    <div>
+                                        <p class="text-gray-800 font-medium leading-relaxed">{{ task.name }}</p>
+                                        <p v-if="task.desc" class="text-sm text-gray-400 mt-1">{{ task.desc }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:items-end gap-3 min-w-[200px]">
+                                <div class="flex rounded-lg shadow-sm w-full sm:w-auto bg-gray-100 p-1">
+                                    <button @click="task.status = 'T'"
+                                            :class="task.status === 'T' ? 'bg-white text-green-600 shadow-sm font-bold' : 'text-gray-400 hover:text-gray-600'"
+                                            class="btn-check flex-1 px-4 py-1.5 rounded-md text-sm transition-all flex items-center justify-center gap-1">
+                                        <span v-if="task.status === 'T'">✓</span> 完成
+                                    </button>
+                                    <button @click="task.status = 'F'"
+                                            :class="task.status === 'F' ? 'bg-white text-red-600 shadow-sm font-bold' : 'text-gray-400 hover:text-gray-600'"
+                                            class="btn-check flex-1 px-4 py-1.5 rounded-md text-sm transition-all flex items-center justify-center gap-1">
+                                        <span v-if="task.status === 'F'">!</span> 未完
+                                    </button>
+                                </div>
+                                <input type="text" v-model="task.remark"
+                                       class="w-full text-sm border-b-2 border-transparent bg-gray-50 focus:bg-white focus:border-blue-500 outline-none px-2 py-1 transition-colors rounded"
+                                       placeholder="备注/异常说明 (选填)...">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="currentRole === 'C'" class="bg-gray-800 text-gray-300 rounded-xl p-6 mt-8">
+                    <h4 class="text-white font-bold mb-4 flex items-center gap-2">
+                        ⚠️ 问题上报与协同解决流程
+                    </h4>
+                    <div class="grid md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-gray-700 p-3 rounded border border-gray-600">
+                            <span class="text-blue-300 font-bold block mb-1">前厅/客房问题 (A组)</span>
+                            → 上报 A组总监 协同解决
+                        </div>
+                        <div class="bg-gray-700 p-3 rounded border border-gray-600">
+                            <span class="text-orange-300 font-bold block mb-1">餐饮问题 (B组)</span>
+                            → 上报 B组总监 协同解决
+                        </div>
+                        <div class="bg-gray-700 p-3 rounded border border-gray-600">
+                            <span class="text-red-300 font-bold block mb-1">重大冲突/危机</span>
+                            → 立即上报 <span class="text-white underline">执行总经理</span> 最终决策
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-6 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 Hotel Intelligent Operations Center. All Data Processed Locally.</p>
+    </footer>
+
+</div>
+
+<script>
+    const { createApp, ref, computed } = Vue;
+
+    // --- 1. 月度任务数据库 (新增部分) ---
+    const MONTHLY_MISSIONS = [
+        // 1月
+        [{name: "春节氛围布置验收", desc: "检查大堂/餐厅年味装饰及背景音乐"}, {name: "年夜饭预订梳理", desc: "审核年夜饭菜单与预订定金收取"}, {name: "春节排班确认", desc: "确认三倍薪资与留守员工关怀"}],
+        // 2月
+        [{name: "开工动员会", desc: "节后收心与开工红包发放"}, {name: "元宵节活动执行", desc: "汤圆赠送与灯谜活动督导"}, {name: "设备复工检查", desc: "长期停用设备的试运行检查"}],
+        // 3月
+        [{name: "春季踏青营销", desc: "周边游路线推广与野餐包上线"}, {name: "工程保养月启动", desc: "空调滤网清洗与墙面修补计划审批"}, {name: "Q1 经营复盘", desc: "第一季度经营数据分析会"}],
+        // 4月
+        [{name: "广交会/五一备战", desc: "制定节日房价策略与超预订方案"}, {name: "防汛防台演练", desc: "检查沙袋/水泵及应急预案培训"}, {name: "OTA 评价维护", desc: "处理近期差评，提升五一前评分"}],
+        // 5月
+        [{name: "五一接待复盘", desc: "分析节日期间服务短板与营收亮点"}, {name: "婚宴旺季执行", desc: "检查宴会厅设备与婚庆进场协调"}, {name: "母亲节活动督导", desc: "特惠房型与康乃馨赠送落实"}],
+        // 6月
+        [{name: "年中冲刺动员", desc: "上半年KPI差距分析与赶超计划"}, {name: "成本控制专项", desc: "分析上半年能耗与人力成本，制定控本方案"}, {name: "端午粽子销售监控", desc: "临期库存促销决策"}],
+        // 7月
+        [{name: "暑期亲子活动检查", desc: "儿童乐园安全检查与亲子房布置"}, {name: "计划卫生复核", desc: "窗帘/地毯/座垫深层清洗进度检查"}, {name: "防暑降温工作", desc: "员工高温补贴与凉茶供应检查"}],
+        // 8月
+        [{name: "七夕营销方案终审", desc: "情侣套餐价格与氛围布置审批"}, {name: "月饼预售启动", desc: "供应商合同审批与全员营销动员"}, {name: "半年设备维保", desc: "电梯/锅炉/消防主机年检"}],
+        // 9月
+        [{name: "店庆月活动坐镇", desc: "大额充值特批与会员答谢"}, {name: "中秋接待高峰督导", desc: "月饼提货流畅度与团圆宴服务"}, {name: "员工茶话会", desc: "Q3 员工思想动态关注"}],
+        // 10月
+        [{name: "国庆黄金周接待", desc: "每日房价动态调整与投诉提级处理"}, {name: "明年预算启动会", desc: "下发各部门预算编制模板与目标"}, {name: "重阳节敬老活动", desc: "社区公益或住店老人关怀"}],
+        // 11月
+        [{name: "年度预算答辩", desc: "听取各部门明年预算汇报并质询"}, {name: "119 消防宣传月", desc: "全员消防实操演练与疏散演习"}, {name: "供暖系统调试", desc: "确保冬至前供暖设备正常"}],
+        // 12月
+        [{name: "年终决算与绩效", desc: "全员年度绩效考评与奖金测算"}, {name: "双旦活动督导", desc: "圣诞/元旦活动现场检查"}, {name: "年度大客户答谢", desc: "寄送年度礼品或上门拜访"}, {name: "跨年夜安全值守", desc: "主要管理人员现场值班"}]
+    ];
+    const MONTH_NAMES = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+
+    // --- 核心数据配置 ---
+    const ROLE_CONFIGS = {
+        'A': {
+            title: 'A - 前厅部 & 客房部',
+            borderColor: 'border-blue-500',
+            barColor: 'bg-blue-600',
+            hoverBorder: 'hover:border-blue-400',
+            accentColor: 'bg-blue-500'
+        },
+        'B': {
+            title: 'B - 餐饮部',
+            borderColor: 'border-orange-500',
+            barColor: 'bg-orange-600',
+            hoverBorder: 'hover:border-orange-400',
+            accentColor: 'bg-orange-500'
+        },
+        'C': {
+            title: 'C - 值班经理',
+            borderColor: 'border-purple-500',
+            barColor: 'bg-purple-600',
+            hoverBorder: 'hover:border-purple-400',
+            accentColor: 'bg-purple-500'
+        },
+        'D': {
+            title: 'D - 总经理',
+            borderColor: 'border-green-500',
+            barColor: 'bg-green-600',
+            hoverBorder: 'hover:border-green-400',
+            accentColor: 'bg-green-500'
+        }
+    };
+
+    // 原封不动保留 A/B/C 的数据
+    const TASK_DATA_TEMPLATE = {
+        'A': {
+            '一、准备阶段 (早班/开班)': [
+                { name: '1. 昨日复盘：昨日最终入住房间数已统计', status: '', remark: '' },
+                { name: '2. 昨日复盘：昨日早餐实际用餐人数已统计', status: '', remark: '' },
+                { name: '3. 昨日复盘：昨日网络差评/投诉已全部处理并闭环', status: '', remark: '' },
+                { name: '4. 今日运营：今日预离客人名单已核查，特殊要求已标记', status: '', remark: '' },
+                { name: '5. 今日运营：已协调客房部对预离房进行预查房准备', status: '', remark: '' },
+                { name: '6. 今日运营：今日预抵客人预订已全面核查并预排房', status: '', remark: '' },
+                { name: '7. 今日运营：所有预抵客人房卡/钥匙已准备', status: '', remark: '' },
+                { name: '8. 今日运营：今日在店及预抵VIP名单（含线下）已生成', status: '', remark: '' },
+                { name: '9. 今日运营：对VIP的个性化服务（欢迎礼遇、客房布置等）已部署', status: '', remark: '' },
+                { name: '10. 明日预备：明日预抵客人预订已初步复核', status: '', remark: '' },
+                { name: '11. 明日预备：已对明日预抵客人进行初步客房预排', status: '', remark: '' },
+                { name: '12. 明日预备：已识别明日潜在VIP及特殊需求客人', status: '', remark: '' },
+                { name: '13. 声誉目标：已识别至少5位线上渠道目标好评客人', status: '', remark: '' },
+                { name: '14. 声誉目标：已识别至少5位线下渠道目标好评客人', status: '', remark: '' },
+                { name: '15. 内部准备：班前会已召开，员工仪容仪表合格', status: '', remark: '' },
+                { name: '16. 内部准备：前台所有运营设备、表单、物资已备齐', status: '', remark: '' },
+                { name: '17. 内部准备：已与客房部核对确认当前可售房态', status: '', remark: '' },
+                { name: '18. 内部协同：已将今日宴会/团队用餐信息同步餐饮部', status: '', remark: '' },
+                { name: '19. 内部协同：已将今日VIP及重点客人名单同步值班经理', status: '', remark: '' }
+            ],
+            '二、执行阶段 (运营中)': [
+                { name: '1. 服务标准：各岗位员工严格按SOP执行服务', status: '', remark: '' },
+                { name: '2. 服务标准：主动执行会员推介与登记，台账准确', status: '', remark: '' },
+                { name: '3. 服务标准：VIP及目标好评客人被全程重点跟进', status: '', remark: '' },
+                { name: '4. 质量检查：巡查本部门岗位纪律（空岗、玩手机）', status: '', remark: '' },
+                { name: '5. 质量检查：公共区域（大堂、电梯、洗手间）卫生与状况良好', status: '', remark: '' },
+                { name: '6. 网络声誉：已引导并确保新增不少于5条5分好评', status: '', remark: '' },
+                { name: '7. 网络声誉：涉及本部门的在线评价已100%回复', status: '', remark: '' },
+                { name: '8. 网络声誉：差评（<4.8分）已立即上报值班经理', status: '', remark: '' },
+                { name: '9. 运营控制：与客房部保持实时房态信息同步', status: '', remark: '' },
+                { name: '10. 运营控制：本部门相关投诉已现场处理，解决率达标（≥95%）', status: '', remark: '' },
+                { name: '11. 运营控制：实时记录会员充值、升级销售等运营数据', status: '', remark: '' }
+            ],
+            '三、收尾与交接阶段 (晚班/交班前)': [
+                { name: '1. 日结工作：所有账目已核对、封账，账实相符', status: '', remark: '' },
+                { name: '2. 日结工作：本日运营数据（营收、会员销售等）已汇总归档', status: '', remark: '' },
+                { name: '3. 日结工作：当日投诉解决率最终确认达标（≥95%）', status: '', remark: '' },
+                { name: '4. 明日最终准备：夜审单据与报表已整理完毕，准备过审', status: '', remark: '' },
+                { name: '5. 明日最终准备：再次复核明日预抵客人安排，确保100%准确', status: '', remark: '' },
+                { name: '6. 明日最终准备：完成明日所有预抵客人的最终房卡准备', status: '', remark: '' },
+                { name: '7. 明日最终准备：将明日VIP及特殊需求的最终部署通知到岗', status: '', remark: '' },
+                { name: '8. 交接汇报：需跟进的维修、客需等已书面交接至相关部门', status: '', remark: '' },
+                { name: '9. 交接汇报：已向值班经理做当日运营汇报（重点客情、投诉、差评）', status: '', remark: '' },
+                { name: '10. 交接汇报：交接班本记录完整，已与下一班次充分沟通', status: '', remark: '' }
+            ]
+        },
+        'B': {
+            '一、准备阶段 (开市前)': [
+                { name: '1. 预订与计划：核查所有预订（宴会、包厢、散台）', status: '', remark: '' },
+                { name: '2. 预订与计划：确认VIP/特殊要求预订', status: '', remark: '' },
+                { name: '3. 预订与计划：将宴会/团队信息同步给前厅', status: '', remark: '' },
+                { name: '4. 预订与计划：根据预订审核备货与排班', status: '', remark: '' },
+                { name: '5. 环境与设施：灯光、空调、背景音乐正常', status: '', remark: '' },
+                { name: '6. 环境与设施：所有服务设备运行正常', status: '', remark: '' },
+                { name: '7. 环境与设施：餐桌摆台符合标准', status: '', remark: '' },
+                { name: '8. 环境与设施：区域卫生达标（备餐区、出菜口、洗手间）', status: '', remark: '' },
+                { name: '9. 厨房准备：员工仪容仪表合格，班前会已开', status: '', remark: '' },
+                { name: '10. 厨房准备：厨房卫生清洁消毒完成', status: '', remark: '' },
+                { name: '11. 厨房准备：冰箱温度正常并记录', status: '', remark: '' },
+                { name: '12. 厨房准备：当日沽清/推荐菜品清单已确认', status: '', remark: '' }
+            ],
+            '二、执行阶段 (运营中)': [
+                { name: '1. 服务质量：员工按标准流程服务（迎宾、点单等）', status: '', remark: '' },
+                { name: '2. 服务质量：VIP/特殊客人服务已重点关注', status: '', remark: '' },
+                { name: '3. 服务质量：出菜速度正常，无严重积压', status: '', remark: '' },
+                { name: '4. 服务质量：对出品菜品质量进行抽查', status: '', remark: '' },
+                { name: '5. 安全与卫生：餐桌翻台后及时清理', status: '', remark: '' },
+                { name: '6. 安全与卫生：食品留样操作规范', status: '', remark: '' },
+                { name: '7. 安全与卫生：传菜通道、消防通道畅通无阻', status: '', remark: '' },
+                { name: '8. 客情处理：现场巡视，及时响应客人需求', status: '', remark: '' },
+                { name: '9. 客情处理：收集客人反馈并通知厨房', status: '', remark: '' },
+                { name: '10. 客情处理：引导满意客人给予好评', status: '', remark: '' }
+            ],
+            '三、收尾与交接阶段 (收市后)': [
+                { name: '1. 收市工作：可回收餐具、布草已归位', status: '', remark: '' },
+                { name: '2. 收市工作：餐厅/厨房全面清洁整理完成', status: '', remark: '' },
+                { name: '3. 收市工作：非必要设备已关闭（节能）', status: '', remark: '' },
+                { name: '4. 收市工作：重点食材/酒水已盘点', status: '', remark: '' },
+                { name: '5. 信息汇总：记录用餐人数、翻台率等数据', status: '', remark: '' },
+                { name: '6. 信息汇总：更新并同步次日预订变更', status: '', remark: '' },
+                { name: '7. 信息汇总：设备故障/服务问题已记录交接', status: '', remark: '' },
+                { name: '8. 夜间联动：夜间送餐流程已确认，通讯畅通', status: '', remark: '' },
+                { name: '9. 夜间联动：已与前厅核对次日早餐预估人数', status: '', remark: '' }
+            ]
+        },
+        'C': {
+            '一、早间准备核查 (08:30-11:00)': [
+                { name: '1. 复核A部《准备表》，现场抽查1-2间VIP房欢迎礼遇及布置', status: '', remark: '' },
+                { name: '2. 复核B部《准备表》，现场检查1个宴会厅/VIP包厢准备情况', status: '', remark: '' },
+                { name: '3. 抽查厨房（1F/3F）卫生、食材储存及晨会记录', status: '', remark: '' },
+                { name: '4. 确认A/B部门间VIP、宴会信息已双向同步', status: '', remark: '' }
+            ],
+            '二、午间高峰巡检 (11:30-14:00)': [
+                { name: '5. 前台高峰暗访，观察服务流程、效率与SOP符合度', status: '', remark: '' },
+                { name: '6. 餐厅（如颐和轩）午餐体验，记录迎宾、上菜、巡台等服务时效', status: '', remark: '' },
+                { name: '7. 抽查厨房出菜口秩序及一道出菜品相', status: '', remark: '' },
+                { name: '8. 巡查全店动线（传菜通道、电梯、消防通道）畅通与清洁', status: '', remark: '' }
+            ],
+            '三、下午综合处理 (14:00-17:00)': [
+                { name: '9. 兜底处理所有上报的重大客诉，确保解决率', status: '', remark: '' },
+                { name: '10. 兜底跟进上报的工程维修单，现场验证影响客人的问题已解决', status: '', remark: '' },
+                { name: '11. 兜底处理所有网络差评（<4.8分），制定并跟踪补救方案', status: '', remark: '' },
+                { name: '12. 审核次日《重大接待通知单》及准备情况，必要时召开协调会', status: '', remark: '' }
+            ],
+            '四、晚间收尾核查 (20:00-交班前)': [
+                { name: '13. 复核A部《收尾表》，最终确认次日预抵安排100%准确', status: '', remark: '' },
+                { name: '14. 复核B部《收尾表》，确认厨房安全收市，夜间服务就绪', status: '', remark: '' },
+                { name: '15. 进行全店夜间安全最终巡查（含后台区域）', status: '', remark: '' },
+                { name: '16. 完成《值班经理每日运营报告》，与下一班详细交接', status: '', remark: '' }
+            ]
+        },
+        // D 的逻辑将在代码中动态生成，这里占位
+        'D': {}
+    };
+
+    createApp({
+        setup() {
+            const currentRole = ref(null);
+            const currentDate = ref(new Date().toLocaleDateString('zh-CN'));
+            const currentTasks = ref({});
+
+            const selectRole = (role) => {
+                currentRole.value = role;
+
+                if (role === 'D') {
+                    // --- D角色：动态生成逻辑 ---
+                    const monthIdx = new Date().getMonth();
+                    const monthName = MONTH_NAMES[monthIdx];
+
+                    currentTasks.value = {
+                        "☀️ 晨间核心掌控 (08:30-12:00)": [
+                            { name: "经营数据晨会", desc: "审阅昨日营收/RevPAR/能耗/GOP，分析偏差", status: "", remark: "" },
+                            { name: "运营全域巡查", desc: "前台/餐厅/厨房/客房SOP执行及计划卫生检查", status: "", remark: "" },
+                            { name: "订单与接待预控", desc: "掌握未来7-14天趋势，调整房价，审批VIP方案", status: "", remark: "" }
+                        ],
+                        "🌤️ 午后运营维系 (13:00-17:00)": [
+                            { name: "重要客户拜访", desc: "每日拜访或致电1-2位在店VIP，收集反馈", status: "", remark: "" },
+                            { name: "投诉与质量终审", desc: "批阅值班经理报告，亲自督办重大/升级投诉", status: "", remark: "" },
+                            { name: "高峰期现场督导", desc: "入住/退房/用餐高峰时段现场值守", status: "", remark: "" },
+                            { name: "终极决策处理", desc: "处理涉及战略风险或重大资源调配问题", status: "", remark: "" }
+                        ],
+                        [`📅 ${monthName}战略专项 (动态)`]: MONTHLY_MISSIONS[monthIdx].map(item => ({
+                            name: item.name,
+                            desc: item.desc,
+                            status: "",
+                            remark: ""
+                        }))
+                    };
+                } else {
+                    // --- A/B/C角色：加载固定模板 ---
+                    currentTasks.value = JSON.parse(JSON.stringify(TASK_DATA_TEMPLATE[role]));
+                }
+            };
+
+            const currentConfig = computed(() => {
+                return currentRole.value ? ROLE_CONFIGS[currentRole.value] : {};
+            });
+
+            // 计算完成率
+            const completionRate = computed(() => {
+                let total = 0;
+                let completed = 0;
+                Object.values(currentTasks.value).forEach(phase => {
+                    phase.forEach(task => {
+                        total++;
+                        if (task.status === 'T') completed++;
+                    });
+                });
+                return total === 0 ? 0 : Math.round((completed / total) * 100);
+            });
+
+            const exportToExcel = () => {
+                const config = currentConfig.value;
+                const rows = [];
+
+                // 1. 构建头部信息
+                rows.push(["酒店每日运营汇报单", "", "", "", ""]);
+                rows.push(["角色:", config.title, "日期:", currentDate.value, ""]);
+                rows.push(["综合完成率:", completionRate.value + "%", "", "", ""]);
+                rows.push([""]); // 空行
+
+                // 2. 表头
+                rows.push(["阶段/类别", "序号", "检查项目", "详细说明(DOnly)", "状态 (T/F)", "备注/异常说明"]);
+
+                // 3. 填充数据
+                Object.entries(currentTasks.value).forEach(([phase, tasks]) => {
+                    tasks.forEach((task, index) => {
+                        rows.push([
+                            phase,
+                            index + 1,
+                            task.name,
+                            task.desc || "-", // D角色有desc，ABC无
+                            task.status === 'T' ? '完成' : (task.status === 'F' ? '未完成' : ''),
+                            task.remark
+                        ]);
+                    });
+                });
+
+                // 4. 生成文件
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+
+                // 设置列宽
+                ws['!cols'] = [{wch:25}, {wch:8}, {wch:40}, {wch:30}, {wch:12}, {wch:40}];
+
+                XLSX.utils.book_append_sheet(wb, ws, "日报详情");
+                XLSX.writeFile(wb, `${currentDate.value}_${currentRole.value}_运营日报.xlsx`);
+            };
+
+            return {
+                currentRole,
+                currentDate,
+                currentTasks,
+                currentConfig,
+                completionRate,
+                selectRole,
+                exportToExcel
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
