@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泽云日常运营清单</title>   
+    <title>泽云日常运营清单</title>    
 
     <link href="https://cdn.staticfile.net/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.prod.min.js"></script>
@@ -51,7 +51,8 @@
                 <p class="mt-3 text-gray-500">Select Your Role to Start Daily Audit</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                
                 <div @click="selectRole('A')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-blue-100 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -59,8 +60,19 @@
                         </div>
                         <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">Dept. A</span>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800">前厅部 & 客房部</h3>
-                    <p class="text-sm text-gray-500 mt-2">Front Office & Housekeeping Manager</p>
+                    <h3 class="text-xl font-bold text-gray-800">前厅部</h3>
+                    <p class="text-sm text-gray-500 mt-2">Front Office Manager</p>
+                </div>
+
+                <div @click="selectRole('E')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-teal-100 rounded-xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">Dept. HK</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">客房部</h3>
+                    <p class="text-sm text-gray-500 mt-2">Housekeeping Manager</p>
                 </div>
 
                 <div @click="selectRole('B')" class="bg-white rounded-2xl p-6 cursor-pointer card-hover shadow-md border border-gray-100 group">
@@ -178,8 +190,9 @@
                     </h4>
                     <div class="grid md:grid-cols-3 gap-4 text-sm">
                         <div class="bg-gray-700 p-3 rounded border border-gray-600">
-                            <span class="text-blue-300 font-bold block mb-1">前厅/客房问题 (A组)</span>
-                            → 上报 A组总监 协同解决
+                            <span class="text-blue-300 font-bold block mb-1">前厅/客房问题 (A/E组)</span>
+                            <span class="text-teal-300 font-bold block mb-1"></span>
+                            → 上报 A/E组总监 协同解决
                         </div>
                         <div class="bg-gray-700 p-3 rounded border border-gray-600">
                             <span class="text-orange-300 font-bold block mb-1">餐饮问题 (B组)</span>
@@ -237,11 +250,18 @@
     // --- 核心数据配置 ---
     const ROLE_CONFIGS = {
         'A': {
-            title: 'A - 前厅部 & 客房部',
+            title: 'A - 前厅部',
             borderColor: 'border-blue-500',
             barColor: 'bg-blue-600',
             hoverBorder: 'hover:border-blue-400',
             accentColor: 'bg-blue-500'
+        },
+        'E': {  // 新增客房部配置
+            title: 'E - 客房部',
+            borderColor: 'border-teal-500',
+            barColor: 'bg-teal-600',
+            hoverBorder: 'hover:border-teal-400',
+            accentColor: 'bg-teal-500'
         },
         'B': {
             title: 'B - 餐饮部',
@@ -266,119 +286,142 @@
         }
     };
 
-    // 原封不动保留 A/B/C 的数据
+    // 更新后的数据内容
     const TASK_DATA_TEMPLATE = {
-        'A': {
+        'A': { // 前厅部
             '一、准备阶段 (早班/开班)': [
-                { name: '1. 昨日复盘：昨日最终入住房间数已统计', status: '', remark: '' },
-                { name: '2. 昨日复盘：昨日早餐实际用餐人数已统计', status: '', remark: '' },
-                { name: '3. 昨日复盘：昨日网络差评/投诉已全部处理并闭环', status: '', remark: '' },
-                { name: '4. 今日运营：今日预离客人名单已核查，特殊要求已标记', status: '', remark: '' },
-                { name: '5. 今日运营：已协调客房部对预离房进行预查房准备', status: '', remark: '' },
-                { name: '6. 今日运营：今日预抵客人预订已全面核查并预排房', status: '', remark: '' },
-                { name: '7. 今日运营：所有预抵客人房卡/钥匙已准备', status: '', remark: '' },
-                { name: '8. 今日运营：今日在店及预抵VIP名单（含线下）已生成', status: '', remark: '' },
-                { name: '9. 今日运营：对VIP的个性化服务（欢迎礼遇、客房布置等）已部署', status: '', remark: '' },
-                { name: '10. 明日预备：明日预抵客人预订已初步复核', status: '', remark: '' },
-                { name: '11. 明日预备：已对明日预抵客人进行初步客房预排', status: '', remark: '' },
-                { name: '12. 明日预备：已识别明日潜在VIP及特殊需求客人', status: '', remark: '' },
-                { name: '13. 声誉目标：已识别至少5位线上渠道目标好评客人', status: '', remark: '' },
-                { name: '14. 声誉目标：已识别至少5位线下渠道目标好评客人', status: '', remark: '' },
-                { name: '15. 内部准备：班前会已召开，员工仪容仪表合格', status: '', remark: '' },
-                { name: '16. 内部准备：前台所有运营设备、表单、物资已备齐', status: '', remark: '' },
-                { name: '17. 内部准备：已与客房部核对确认当前可售房态', status: '', remark: '' },
-                { name: '18. 内部协同：已将今日宴会/团队用餐信息同步餐饮部', status: '', remark: '' },
-                { name: '19. 内部协同：已将今日VIP及重点客人名单同步值班经理', status: '', remark: '' }
+                { name: '昨日复盘：昨日早餐实际用餐人数已统计', status: '', remark: '' },
+                { name: '昨日复盘：昨日网络差评/投诉已全部处理并闭环', status: '', remark: '' },
+                { name: '今日运营：今日预离客人名单已核查，特殊要求已标记', status: '', remark: '' },
+                { name: '今日运营：已协调客房部对预离房进行预查房准备', status: '', remark: '' },
+                { name: '今日运营：今日预抵客人预订已全面核查并预排房', status: '', remark: '' },
+                { name: '今日运营：所有预抵客人房卡/钥匙已准备', status: '', remark: '' },
+                { name: '今日运营：今日在店及预抵VIP名单（含线下）已生成', status: '', remark: '' },
+                { name: '今日运营：对VIP的个性化服务（欢迎礼遇、客房布置等）已部署', status: '', remark: '' },
+                { name: '明日预备：明日预抵客人预订已初步复核', status: '', remark: '' },
+                { name: '明日预备：已对明日预抵客人进行初步客房预排', status: '', remark: '' },
+                { name: '声誉目标：已识别至少5位线上渠道目标好评客人', status: '', remark: '' },
+                { name: '声誉目标：已识别至少5位线下渠道目标好评客人', status: '', remark: '' },
+                { name: '内部准备：班前会已召开，员工仪容仪表合格', status: '', remark: '' },
+                { name: '内部准备：前台所有运营设备、表单、物资已备齐', status: '', remark: '' },
+                { name: '内部准备：已与客房部核对确认当前可售房态', status: '', remark: '' },
+                { name: '内部协同：已将今日宴会/团队用餐信息同步餐饮部', status: '', remark: '' },
+                { name: '内部协同：已将今日VIP及重点客人名单同步值班经理', status: '', remark: '' }
             ],
             '二、执行阶段 (运营中)': [
-                { name: '1. 服务标准：各岗位员工严格按SOP执行服务', status: '', remark: '' },
-                { name: '2. 服务标准：主动执行会员推介与登记，台账准确', status: '', remark: '' },
-                { name: '3. 服务标准：VIP及目标好评客人被全程重点跟进', status: '', remark: '' },
-                { name: '4. 质量检查：巡查本部门岗位纪律（空岗、玩手机）', status: '', remark: '' },
-                { name: '5. 质量检查：公共区域（大堂、电梯、洗手间）卫生与状况良好', status: '', remark: '' },
-                { name: '6. 网络声誉：已引导并确保新增不少于5条5分好评', status: '', remark: '' },
-                { name: '7. 网络声誉：涉及本部门的在线评价已100%回复', status: '', remark: '' },
-                { name: '8. 网络声誉：差评（<4.8分）已立即上报值班经理', status: '', remark: '' },
-                { name: '9. 运营控制：与客房部保持实时房态信息同步', status: '', remark: '' },
-                { name: '10. 运营控制：本部门相关投诉已现场处理，解决率达标（≥95%）', status: '', remark: '' },
-                { name: '11. 运营控制：实时记录会员充值、升级销售等运营数据', status: '', remark: '' }
+                { name: '服务标准：各岗位员工严格按SOP执行服务', status: '', remark: '' },
+                { name: '服务标准：主动执行会员推介与登记，台账准确', status: '', remark: '' },
+                { name: '服务标准：VIP及目标好评客人被全程重点跟进', status: '', remark: '' },
+                { name: '质量检查：巡查本部门岗位纪律（空岗、玩手机）', status: '', remark: '' },
+                { name: '质量检查：公共区域（大堂、电梯、洗手间）卫生与状况良好', status: '', remark: '' },
+                { name: '网络声誉：已引导并确保新增不少于5条5分好评', status: '', remark: '' },
+                { name: '网络声誉：涉及本部门的在线评价已100%回复', status: '', remark: '' },
+                { name: '网络声誉：差评（<4.8分）已立即上报值班经理', status: '', remark: '' },
+                { name: '运营控制：与客房部保持实时房态信息同步', status: '', remark: '' },
+                { name: '运营控制：本部门相关投诉已现场处理，解决率达标（≥95%）', status: '', remark: '' },
+                { name: '运营控制：实时记录会员充值、升级销售等运营数据', status: '', remark: '' }
             ],
             '三、收尾与交接阶段 (晚班/交班前)': [
-                { name: '1. 日结工作：所有账目已核对、封账，账实相符', status: '', remark: '' },
-                { name: '2. 日结工作：本日运营数据（营收、会员销售等）已汇总归档', status: '', remark: '' },
-                { name: '3. 日结工作：当日投诉解决率最终确认达标（≥95%）', status: '', remark: '' },
-                { name: '4. 明日最终准备：夜审单据与报表已整理完毕，准备过审', status: '', remark: '' },
-                { name: '5. 明日最终准备：再次复核明日预抵客人安排，确保100%准确', status: '', remark: '' },
-                { name: '6. 明日最终准备：完成明日所有预抵客人的最终房卡准备', status: '', remark: '' },
-                { name: '7. 明日最终准备：将明日VIP及特殊需求的最终部署通知到岗', status: '', remark: '' },
-                { name: '8. 交接汇报：需跟进的维修、客需等已书面交接至相关部门', status: '', remark: '' },
-                { name: '9. 交接汇报：已向值班经理做当日运营汇报（重点客情、投诉、差评）', status: '', remark: '' },
-                { name: '10. 交接汇报：交接班本记录完整，已与下一班次充分沟通', status: '', remark: '' }
+                { name: '日结工作：所有账目已核对、封账，账实相符', status: '', remark: '' },
+                { name: '日结工作：本日运营数据（营收、会员销售等）已汇总归档', status: '', remark: '' },
+                { name: '日结工作：当日投诉解决率最终确认达标（≥95%）', status: '', remark: '' },
+                { name: '明日最终准备：夜审单据与报表已整理完毕，准备过审', status: '', remark: '' },
+                { name: '明日最终准备：再次复核明日预抵客人安排，确保100%准确', status: '', remark: '' },
+                { name: '明日最终准备：完成明日所有预抵客人的最终房卡准备', status: '', remark: '' },
+                { name: '明日最终准备：将明日VIP及特殊需求的最终部署通知到岗', status: '', remark: '' },
+                { name: '交接汇报：需跟进的维修、客需等已书面交接至相关部门', status: '', remark: '' },
+                { name: '交接汇报：已向值班经理做当日运营汇报（重点客情、投诉、差评）', status: '', remark: '' },
+                { name: '交接汇报：交接班本记录完整，已与下一班次充分沟通', status: '', remark: '' },
+                { name: '填写姓名', status: '', remark: '' }
             ]
         },
-        'B': {
+        'E': { // 客房部 (New)
+            '一、准备阶段 (早班/开班)': [
+                { name: '昨日复盘：昨日最终入住房间数已统计', status: '', remark: '' },
+                { name: '今日运营：已协调客房部对预离房进行预查房准备', status: '', remark: '' },
+                { name: '内部准备：班前会已召开，员工仪容仪表合格', status: '', remark: '' },
+                { name: '内部准备：已与客房部核对确认当前可售房态', status: '', remark: '' },
+                { name: '明日预备：已识别明日潜在VIP及特殊需求客人', status: '', remark: '' },
+                { name: '填写姓名', status: '', remark: '' }
+            ]
+        },
+        'B': { // 餐饮部
             '一、准备阶段 (开市前)': [
-                { name: '1. 预订与计划：核查所有预订（宴会、包厢、散台）', status: '', remark: '' },
-                { name: '2. 预订与计划：确认VIP/特殊要求预订', status: '', remark: '' },
-                { name: '3. 预订与计划：将宴会/团队信息同步给前厅', status: '', remark: '' },
-                { name: '4. 预订与计划：根据预订审核备货与排班', status: '', remark: '' },
-                { name: '5. 环境与设施：灯光、空调、背景音乐正常', status: '', remark: '' },
-                { name: '6. 环境与设施：所有服务设备运行正常', status: '', remark: '' },
-                { name: '7. 环境与设施：餐桌摆台符合标准', status: '', remark: '' },
-                { name: '8. 环境与设施：区域卫生达标（备餐区、出菜口、洗手间）', status: '', remark: '' },
-                { name: '9. 厨房准备：员工仪容仪表合格，班前会已开', status: '', remark: '' },
-                { name: '10. 厨房准备：厨房卫生清洁消毒完成', status: '', remark: '' },
-                { name: '11. 厨房准备：冰箱温度正常并记录', status: '', remark: '' },
-                { name: '12. 厨房准备：当日沽清/推荐菜品清单已确认', status: '', remark: '' }
+                { name: '预订与计划：核查所有预订（宴会、包厢、散台）', status: '', remark: '' },
+                { name: '预订与计划：确认VIP/特殊要求预订', status: '', remark: '' },
+                { name: '预订与计划：将宴会/团队信息同步给前厅', status: '', remark: '' },
+                { name: '预订与计划：根据预订审核备货与排班', status: '', remark: '' },
+                { name: '环境与设施：灯光、空调、背景音乐正常', status: '', remark: '' },
+                { name: '环境与设施：所有服务设备运行正常', status: '', remark: '' },
+                { name: '环境与设施：餐桌摆台符合标准', status: '', remark: '' },
+                { name: '环境与设施：区域卫生达标（备餐区、出菜口、洗手间）', status: '', remark: '' },
+                { name: '厨房准备：员工仪容仪表合格，班前会已开', status: '', remark: '' },
+                { name: '厨房准备：厨房卫生清洁消毒完成', status: '', remark: '' },
+                { name: '厨房准备：冰箱温度正常并记录', status: '', remark: '' },
+                { name: '厨房准备：当日沽清/推荐菜品清单已确认', status: '', remark: '' },
+                { name: '到岗人员确认', status: '', remark: '' }
             ],
             '二、执行阶段 (运营中)': [
-                { name: '1. 服务质量：员工按标准流程服务（迎宾、点单等）', status: '', remark: '' },
-                { name: '2. 服务质量：VIP/特殊客人服务已重点关注', status: '', remark: '' },
-                { name: '3. 服务质量：出菜速度正常，无严重积压', status: '', remark: '' },
-                { name: '4. 服务质量：对出品菜品质量进行抽查', status: '', remark: '' },
-                { name: '5. 安全与卫生：餐桌翻台后及时清理', status: '', remark: '' },
-                { name: '6. 安全与卫生：食品留样操作规范', status: '', remark: '' },
-                { name: '7. 安全与卫生：传菜通道、消防通道畅通无阻', status: '', remark: '' },
-                { name: '8. 客情处理：现场巡视，及时响应客人需求', status: '', remark: '' },
-                { name: '9. 客情处理：收集客人反馈并通知厨房', status: '', remark: '' },
-                { name: '10. 客情处理：引导满意客人给予好评', status: '', remark: '' }
+                { name: '服务质量：员工按标准流程服务（迎宾、点单等）', status: '', remark: '' },
+                { name: '服务质量：VIP/特殊客人服务已重点关注', status: '', remark: '' },
+                { name: '服务质量：出菜速度正常，无严重积压', status: '', remark: '' },
+                { name: '服务质量：对出品菜品质量进行抽查', status: '', remark: '' },
+                { name: '安全与卫生：餐桌翻台后及时清理', status: '', remark: '' },
+                { name: '安全与卫生：食品留样操作规范', status: '', remark: '' },
+                { name: '安全与卫生：传菜通道、消防通道畅通无阻', status: '', remark: '' },
+                { name: '客情处理：现场巡视，及时响应客人需求', status: '', remark: '' },
+                { name: '客情处理：收集客人反馈并通知厨房', status: '', remark: '' },
+                { name: '客情处理：引导满意客人给予好评', status: '', remark: '' },
+                { name: '07:00 早餐巡查：检查出品区与餐台，确保及时添菜、补充餐具与保温措施到位', status: '', remark: '' },
+                { name: '07:30 早餐巡查：检查就餐高峰动线与翻台效率，确保及时收餐、及时补菜、现场整洁', status: '', remark: '' },
+                { name: '08:00 早餐巡查：检查收尾节奏与剩余菜品管理，确保及时收餐、补缺、避免断档与浪费', status: '', remark: '' },
+                { name: '检查项：前台员工仪容仪表规范、着装统一、精神饱满、服务亲和', status: '', remark: '' },
+                { name: '检查项：大厅工作人员见客主动问候、服务引导清晰、响应及时', status: '', remark: '' },
+                { name: '检查项：后厨操作规范、卫生达标；餐厅服务员服务主动、收送餐高效', status: '', remark: '' },
+                { name: '检查项：就餐门口设专职迎宾、主动迎送客人、引导入座到位', status: '', remark: '' }
             ],
             '三、收尾与交接阶段 (收市后)': [
-                { name: '1. 收市工作：可回收餐具、布草已归位', status: '', remark: '' },
-                { name: '2. 收市工作：餐厅/厨房全面清洁整理完成', status: '', remark: '' },
-                { name: '3. 收市工作：非必要设备已关闭（节能）', status: '', remark: '' },
-                { name: '4. 收市工作：重点食材/酒水已盘点', status: '', remark: '' },
-                { name: '5. 信息汇总：记录用餐人数、翻台率等数据', status: '', remark: '' },
-                { name: '6. 信息汇总：更新并同步次日预订变更', status: '', remark: '' },
-                { name: '7. 信息汇总：设备故障/服务问题已记录交接', status: '', remark: '' },
-                { name: '8. 夜间联动：夜间送餐流程已确认，通讯畅通', status: '', remark: '' },
-                { name: '9. 夜间联动：已与前厅核对次日早餐预估人数', status: '', remark: '' }
+                { name: '收市工作：可回收餐具、布草已归位', status: '', remark: '' },
+                { name: '收市工作：餐厅/厨房全面清洁整理完成', status: '', remark: '' },
+                { name: '收市工作：非必要设备已关闭（节能）', status: '', remark: '' },
+                { name: '收市工作：重点食材/酒水已盘点', status: '', remark: '' },
+                { name: '信息汇总：记录用餐人数、翻台率等数据', status: '', remark: '' },
+                { name: '信息汇总：更新并同步次日预订变更', status: '', remark: '' },
+                { name: '信息汇总：设备故障/服务问题已记录交接', status: '', remark: '' },
+                { name: '夜间联动：夜间送餐流程已确认，通讯畅通', status: '', remark: '' },
+                { name: '夜间联动：已与前厅核对次日早餐预估人数', status: '', remark: '' },
+                { name: '填写姓名', status: '', remark: '' }
             ]
         },
-        'C': {
+        'C': { // 值班经理
             '一、早间准备核查 (08:30-11:00)': [
-                { name: '1. 复核A部《准备表》，现场抽查1-2间VIP房欢迎礼遇及布置', status: '', remark: '' },
-                { name: '2. 复核B部《准备表》，现场检查1个宴会厅/VIP包厢准备情况', status: '', remark: '' },
-                { name: '3. 抽查厨房（1F/3F）卫生、食材储存及晨会记录', status: '', remark: '' },
-                { name: '4. 确认A/B部门间VIP、宴会信息已双向同步', status: '', remark: '' }
+                { name: '复核餐饮部 《准备表》，现场检查1个宴会厅/VIP包厢准备情况', status: '', remark: '' },
+                { name: '核实到岗人数 并下方备注', status: '', remark: '' },
+                { name: '07:15 早餐巡查：检查出品区与餐台，确保及时添菜、补充餐具与保温措施到位', status: '', remark: '' },
+                { name: '07:45 早餐巡查：检查就餐高峰动线与翻台效率，确保及时收餐、及时补菜、现场整洁', status: '', remark: '' },
+                { name: '08:15 早餐巡查：检查收尾节奏与剩余菜品管理，确保及时收餐、补缺、避免断档与浪费', status: '', remark: '' },
+                { name: '复核前厅以及客房部《准备表》，现场抽查1-2间VIP房欢迎礼遇及布置', status: '', remark: '' },
+                { name: '抽查厨房（1F/3F）卫生、食材储存及晨会记录', status: '', remark: '' },
+                { name: '确认A/B部门间VIP、宴会信息已双向同步', status: '', remark: '' }
             ],
             '二、午间高峰巡检 (11:30-14:00)': [
-                { name: '5. 前台高峰暗访，观察服务流程、效率与SOP符合度', status: '', remark: '' },
-                { name: '6. 餐厅（如颐和轩）午餐体验，记录迎宾、上菜、巡台等服务时效', status: '', remark: '' },
-                { name: '7. 抽查厨房出菜口秩序及一道出菜品相', status: '', remark: '' },
-                { name: '8. 巡查全店动线（传菜通道、电梯、消防通道）畅通与清洁', status: '', remark: '' }
+                { name: '前台高峰暗访，观察服务流程、效率与SOP符合度', status: '', remark: '' },
+                { name: '餐厅（如颐和轩）午餐体验，记录迎宾、上菜、巡台等服务时效', status: '', remark: '' },
+                { name: '抽查厨房出菜口秩序及一道出菜品相', status: '', remark: '' },
+                { name: '巡查全店动线（传菜通道、电梯、消防通道）畅通与清洁', status: '', remark: '' }
             ],
             '三、下午综合处理 (14:00-17:00)': [
-                { name: '9. 兜底处理所有上报的重大客诉，确保解决率', status: '', remark: '' },
-                { name: '10. 兜底跟进上报的工程维修单，现场验证影响客人的问题已解决', status: '', remark: '' },
-                { name: '11. 兜底处理所有网络差评（<4.8分），制定并跟踪补救方案', status: '', remark: '' },
-                { name: '12. 审核次日《重大接待通知单》及准备情况，必要时召开协调会', status: '', remark: '' }
+                { name: '兜底处理所有上报的重大客诉，确保解决率', status: '', remark: '' },
+                { name: '兜底跟进上报的工程维修单，现场验证影响客人的问题已解决', status: '', remark: '' },
+                { name: '兜底处理所有网络差评（<4.8分），制定并跟踪补救方案', status: '', remark: '' },
+                { name: '审核次日《重大接待通知单》及准备情况，必要时召开协调会', status: '', remark: '' }
             ],
             '四、晚间收尾核查 (20:00-交班前)': [
-                { name: '13. 复核A部《收尾表》，最终确认次日预抵安排100%准确', status: '', remark: '' },
-                { name: '14. 复核B部《收尾表》，确认厨房安全收市，夜间服务就绪', status: '', remark: '' },
-                { name: '15. 进行全店夜间安全最终巡查（含后台区域）', status: '', remark: '' },
-                { name: '16. 完成《值班经理每日运营报告》，与下一班详细交接', status: '', remark: '' }
+                { name: '复核A部《收尾表》，最终确认次日预抵安排100%准确', status: '', remark: '' },
+                { name: '复核B部《收尾表》，确认厨房安全收市，夜间服务就绪', status: '', remark: '' },
+                { name: '进行全店夜间安全最终巡查（含后台区域）', status: '', remark: '' },
+                { name: '完成《值班经理每日运营报告》，与下一班详细交接', status: '', remark: '' },
+                { name: '填写姓名', status: '', remark: '' }
             ]
         },
         // D 的逻辑将在代码中动态生成，这里占位
@@ -419,7 +462,7 @@
                         }))
                     };
                 } else {
-                    // --- A/B/C角色：加载固定模板 ---
+                    // --- A/B/C/E角色：加载固定模板 ---
                     currentTasks.value = JSON.parse(JSON.stringify(TASK_DATA_TEMPLATE[role]));
                 }
             };
@@ -493,5 +536,4 @@
 </script>
 
 </body>
-
 </html>
